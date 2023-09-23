@@ -1,41 +1,52 @@
 import requests
 import xml.etree.ElementTree as ET
 
-URL = "https://cbr.ru/scripts/XML_daily.asp" # URL-адрес, по которому будет выполняться HTTP-запрос
-response = requests.get(URL) # выполняем HTTP-запрос методом get по указанному URL
-# print(response.content)
+def get_currency_data(url):
+    response = requests.get(url)
+    tree = ET.fromstring(response.text)
+    return tree
 
-tree = ET.fromstring(response.text) # Преобразуем строку с XML-данными в объект
-print(tree) # выведем объект
+def get_currency_by_code(currency_tree, code):
+    for valute in currency_tree.findall(".//Valute"):
+        char_code = valute.find("CharCode").text
+        if char_code == code:
+            nominal = valute.find("Nominal").text
+            name_valute = valute.find("Name").text
+            valute_value = valute.find("Value").text
+            return {
+                "nominal": nominal,
+                "name": name_valute,
+                "value": valute_value
+            }
+    return None
+
+def display_currency_info(currency_data):
+    if currency_data:
+        print(f"{currency_data['nominal']}  {currency_data['name']}     ({code_valute}) = {currency_data['value']} рублей")
+    else:
+        print(f"Курс {code_valute} на текущий день неизвестен")
+
+
+URL = "https://cbr.ru/scripts/XML_daily.asp"
+currency_tree = get_currency_data(URL)
 
 user_case = int(input("Вывести информацию по коду валюты - введите 1\nВывести таблицу курсов всех валют к рублю - введите 2\n"))
 
 if user_case == 1:
-    code_valute = input("Введите код валюты: ").upper() # например, доллар
-    valute_value = None # курс
-
-    for valute in tree.findall(".//Valute"):
-        char_code = valute.find("CharCode").text
-        if char_code == code_valute:
-            nominal = valute.find("Nominal").text # например: 10
-            name_valute = valute.find("Name").text # например: Египетских фунтов
-            valute_value = valute.find("Value").text # 31,53... (рублей)
-
-    if valute_value:
-        print(f"{nominal} {name_valute} ({code_valute}) = {valute_value} рублей")
-    else:
-        print(f"Курс {code_valute} на текущий день неизвестен")
+    # Вывод курса определённой валюты
+    code_valute = input("Введите код валюты: ").upper()
+    currency_data =     get_currency_by_code(currency_tree, code_valute)
+    display_currency_info(currency_data)
 else:
-    # здесь должен быть наш новый функционал, который       выводит таблицу курсов всех валют
-    currency_rates = {}  # Словарь для хранения курсов валют
+    # Вывод курсов всех валют по отношению к рублю
+    currency_rates = {}
 
-    for valute in tree.findall(".//Valute"):
+    for valute in currency_tree.findall(".//    Valute"):
         char_code = valute.find("CharCode").text
         value = valute.find("Value").text
         currency_rates[char_code] = value
 
-    # Выводим таблицу с курсами всех валют
     print("Курсы валют к рублю:")
-    print("--------------------")
+    print("------------------")
     for char_code, value in currency_rates.items():
         print(f"{char_code}: {value}")
