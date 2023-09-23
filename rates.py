@@ -25,6 +25,20 @@ def display_currency_info(currency_data):
         print(f"{currency_data['nominal']}  {currency_data['name']}     ({code_valute}) = {currency_data['value']} рублей")
     else:
         print(f"Курс {code_valute} на текущий день неизвестен")
+        
+
+def display_all_currency_rates(currency_tree):
+    currency_rates = {}
+
+    for valute in currency_tree.findall(".//Valute"):
+        char_code = valute.find("CharCode").text
+        value = valute.find("Value").text
+        currency_rates[char_code] = value
+
+    print("Курсы валют к рублю:")
+    print("--------------------")
+    for char_code, value in currency_rates.items():
+        print(f"{char_code}: {value}")
 
 
 URL = "https://cbr.ru/scripts/XML_daily.asp"
@@ -39,14 +53,4 @@ if user_case == 1:
     display_currency_info(currency_data)
 else:
     # Вывод курсов всех валют по отношению к рублю
-    currency_rates = {}
-
-    for valute in currency_tree.findall(".//    Valute"):
-        char_code = valute.find("CharCode").text
-        value = valute.find("Value").text
-        currency_rates[char_code] = value
-
-    print("Курсы валют к рублю:")
-    print("------------------")
-    for char_code, value in currency_rates.items():
-        print(f"{char_code}: {value}")
+    display_all_currency_rates(currency_tree)
