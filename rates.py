@@ -11,7 +11,7 @@ print(tree) # выведем объект
 user_case = int(input("Вывести информацию по коду валюты - введите 1\nВывести таблицу курсов всех валют к рублю - введите 2\n"))
 
 if user_case == 1:
-    code_valute = "USD" # например, доллар
+    code_valute = input("Введите код валюты: ").upper() # например, доллар
     valute_value = None # курс
 
     for valute in tree.findall(".//Valute"):
@@ -26,5 +26,16 @@ if user_case == 1:
     else:
         print(f"Курс {code_valute} на текущий день неизвестен")
 else:
-    # здесь должен быть наш новый функционал, который выводит таблицу курсов всех валют
-    print("ok")
+    # здесь должен быть наш новый функционал, который       выводит таблицу курсов всех валют
+    currency_rates = {}  # Словарь для хранения курсов валют
+
+    for valute in tree.findall(".//Valute"):
+        char_code = valute.find("CharCode").text
+        value = valute.find("Value").text
+        currency_rates[char_code] = value
+
+    # Выводим таблицу с курсами всех валют
+    print("Курсы валют к рублю:")
+    print("--------------------")
+    for char_code, value in currency_rates.items():
+        print(f"{char_code}: {value}")
